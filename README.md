@@ -41,7 +41,7 @@ d) `sudo apt-install git`
 
 5) Clone Minivmac-Disk-Helper to the same parent folder as the minivmac folder: `git clone https://github.com/ngsenecal/Minivmac-Disk-Helper`.
 
-6) Copy "Minivmac-Disk-Helpe/helper_files/SONYEMDV.c" into "minivmac/src" and overwrite the file.
+6) Copy "Minivmac-Disk-Helper/helper_files/SONYEMDV.c" into "minivmac/src" and overwrite the file.
 
 7) Edit "build_linux.sh": `sudo nano minivmac/build_linux.sh
 `. Configure the emulated mac to your specifications, but these settings must me included:
