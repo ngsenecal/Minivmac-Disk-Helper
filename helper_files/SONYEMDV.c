@@ -50,7 +50,7 @@ LOCALVAR ui5b vSonyMountedMask = 0;
 LOCALFUNC void SetEjectFlag(int num){
     const char *txt = "eject";
     char filename[50];
-    snprintf(filename, sizeof(filename), "%s%d", txt, num)
+    snprintf(filename, sizeof(filename), "%s%d", txt, num);
 
 	FILE *file = fopen(filename, "w");
 	
@@ -71,6 +71,11 @@ LOCALFUNC blnr vSonyNextPendingInsert0(tDrive *Drive_No)
 		for (i = 0; i < NumDrives; ++i) {
 			if ((MountPending & ((ui5b)1 << i)) != 0) {
 				*Drive_No = i;
+				
+				FILE *innie;
+				innie = fopen("insert", "w");
+				fclose(innie);
+
 				return trueblnr; /* only one disk at a time */
 			}
 		}
