@@ -1,10 +1,12 @@
 #!/bin/bash
 
+clear
+
 echo "Updating System"
 sudo apt-get update  && sudo apt-get upgrade
 
 echo "Installing dependencies"
-sudo apt install -y libsdl2 make gcc git python3 python3-pip python3-venv
+sudo apt install -y libsdl2-dev make gcc git python3 python3-pip python3-venv
 
 echo "Creating and activating python virtual environment"
 python3 -m venv env
@@ -25,7 +27,7 @@ cp ./Minivmac-Disk-Helper/helper_files/SONYEMDV.c ./minivmac/src
 echo "Setting build settings"
 
 echo "Building minivmac"
-./build_linux64.sh
+./minivmac/build_linux64.sh
 
 echo "Copying over helper.py and launch script"
 cp ./Minivmac-Disk-Helper/helper_files/helper.py ./minivmac
