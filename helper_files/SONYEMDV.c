@@ -47,11 +47,16 @@ LOCALVAR ui5b vSonyMountedMask = 0;
 #define vSonyIsMounted(Drive_No) \
 	((vSonyMountedMask & ((ui5b)1 << (Drive_No))) != 0)
 
-LOCALFUNC void SetEjectFlag(int num){
-    const char *txt = "eject";
-    char filename[50];
-    snprintf(filename, sizeof(filename), "%s%d", txt, num);
-
+LOCALFUNC void SetFlag(int num, int mode){
+	const char *txt;
+	if (mode == 1){
+		txt = "eject";
+	} else {
+		txt = "insert";
+	}
+	
+	char filename[50];
+	snprintf(filename, sizeof(filename), "%s%d", txt, num);
 	FILE *file = fopen(filename, "w");
 	
 	if (file == NULL){
@@ -72,9 +77,7 @@ LOCALFUNC blnr vSonyNextPendingInsert0(tDrive *Drive_No)
 			if ((MountPending & ((ui5b)1 << i)) != 0) {
 				*Drive_No = i;
 				
-				FILE *innie;
-				innie = fopen("insert", "w");
-				fclose(innie);
+				SetFlag(i, 0);
 
 				return trueblnr; /* only one disk at a time */
 			}
@@ -502,7 +505,7 @@ LOCALFUNC tMacErr vSonyNextPendingInsert(tDrive *Drive_No)
 
 		if (mnvm_noErr != result) {
 			(void) vSonyEject(i);
-			SetEjectFlag(i);
+			SetFlag(i, 1);
 		}
 	}
 
@@ -610,7 +613,7 @@ LOCALFUNC tMacErr Drive_Eject(tDrive Drive_No)
 		Drive_UpdateChecksums(Drive_No);
 #endif
 		result = vSonyEject(Drive_No);
-		SetEjectFlag(Drive_No);
+		SetFlag(Drive_No, 1);
 
 		if (QuitOnEject != 0) {
 			if (! AnyDiskInserted()) {
@@ -652,7 +655,7 @@ GLOBALPROC Sony_EjectAllDisks(void)
 			Drive_UpdateChecksums(i);
 #endif
 			(void) vSonyEject(i);
-			SetEjectFlag(i);
+			SetFlag(i, 1);
 		}
 	}
 }

@@ -9,10 +9,11 @@ import os
 import sys
 
 class Disk:
-	def __init__(self, filename, mount, number):
+	def __init__(self, filename, mount, number, v_drive=None):
 		self.filename = filename
 		self.mount = mount
 		self.number = number
+        self.v_drive = v_drive
 
 class DiskManager:
 	def __init__(self, mnt, limit):
@@ -56,7 +57,6 @@ class DiskManager:
 			for file in Path(path).glob("*.dsk"):
 				for slot in range(1, self.limit+1):
 					if self.disks[slot] is None:
-						temp_disk = Disk(file.name, path, slot)
 						shutil.copy(f"{path}/{file.name}", f"disk{slot}.dsk")
 
 						self.board.write(e.EV_KEY, e.KEY_LEFTCTRL, 1)
@@ -64,6 +64,13 @@ class DiskManager:
 						self.board.write(e.EV_KEY, e.KEY_LEFTCTRL, 0)
 						self.board.write(e.EV_KEY,self.pairs[slot], 0)
 						self.board.syn()
+
+                        while True:
+                            for file in Path(".").glob("insert*"):
+                                num = file.name[-1]
+                                self.disks[slot] = Disk(file.name, path, slot, num)
+                                os.remove(file.name)
+                                break
 						break
 				break
 		else:
