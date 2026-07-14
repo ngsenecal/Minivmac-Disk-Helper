@@ -13,7 +13,7 @@ class Disk:
 		self.filename = filename
 		self.mount = mount
 		self.number = number
-        self.v_drive = v_drive
+		self.v_drive = v_drive
 
 class DiskManager:
 	def __init__(self, mnt, limit):
@@ -26,6 +26,11 @@ class DiskManager:
 		self.observer = None
 
 		self.detection_init()
+	
+	@staticmethod
+	def inPath(path, file):
+		for file in Path(path).glob(file):
+			return file.name
 	
 	def detection_init(self):
 		context = pyudev.Context()
@@ -64,26 +69,29 @@ class DiskManager:
 						self.board.write(e.EV_KEY, e.KEY_LEFTCTRL, 0)
 						self.board.write(e.EV_KEY,self.pairs[slot], 0)
 						self.board.syn()
-
-                        while True:
-                            for file in Path(".").glob("insert*"):
-                                num = file.name[-1]
-                                self.disks[slot] = Disk(file.name, path, slot, num)
-                                os.remove(file.name)
-                                break
+						
+						#for file in Path(".").glob("insert*"):
+							#num = file.name[-1]
+						while not os.path.exists("insert1"):
+							pass
+						num = "1"
+						self.disks[slot] = Disk(file.name, path, slot, num)
+						os.remove("insert1")
 						break
-				break
 		else:
 			subprocess.run(["sudo", "umount", path], check=True, capture_output=True, text=True)
 			
 		
 	def unmount(self, num):
-		os.remove(f"eject{num}")
-		if num > 0:
-			loaded_drive = self.drives[num]
-			shutil.copy(f"disk{num}.dsk", f"{loaded_drive.mount}/{loaded_drive.filename}")
-			subprocess.run(["sudo", "umount", loaded_drive.mount], check=True, capture_output=True, text=True)
-			self.drives[num] = None
+		for key in self.disks:
+			if self.disks[key] is not None and key != 1:
+				if self.disks[key].v_drive == num:
+					drive = self.disks[key]
+					shutil.copy(f"disk{key}.dsk", f"{drive.mount}/{drive.filename}")
+					subprocess.run(["sudo", "umount", drive.mount], check=True, capture_output=True, text=True)
+					self.disks[key] = None
+					os.remove(f"disk{key}.dsk")
+					os.remove(f"eject{num}")
 		
 if __name__ == "__main__":
 	time.sleep(1)
@@ -91,6 +99,9 @@ if __name__ == "__main__":
 	log = []
 	
 	while True:
+		for file in Path(".").glob("eject*"):
+			manager.unmount(file.name[-1])
+				
 		for program in psutil.process_iter(['pid', 'name']):
 			log.append(program.info['name'])
 
@@ -101,6 +112,4 @@ if __name__ == "__main__":
 			sys.exit()
 		else:
 			log = []
-		for file in Path(".").glob("eject*"):
-			manager.unmount(int(file.name[-1]))
 		time.sleep(0.5)

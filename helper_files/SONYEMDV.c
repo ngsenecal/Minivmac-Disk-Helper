@@ -48,22 +48,24 @@ LOCALVAR ui5b vSonyMountedMask = 0;
 	((vSonyMountedMask & ((ui5b)1 << (Drive_No))) != 0)
 
 LOCALFUNC void SetFlag(int num, int mode){
-	const char *txt;
-	if (mode == 1){
-		txt = "eject";
-	} else {
-		txt = "insert";
-	}
+	if (num != 0){
+		const char *txt;
+		if (mode == 1){
+			txt = "eject";
+		} else {
+			txt = "insert";
+		}
 	
-	char filename[50];
-	snprintf(filename, sizeof(filename), "%s%d", txt, num);
-	FILE *file = fopen(filename, "w");
+		char filename[50];
+		snprintf(filename, sizeof(filename), "%s%d", txt, num);
+		FILE *file = fopen(filename, "w");
 	
-	if (file == NULL){
-		//Do nothing
-	} else {
-		fclose(file);
-		//It worked
+		if (file == NULL){
+			//Do nothing
+		} else {
+			fclose(file);
+			//It worked
+		}
 	}
 }
 
