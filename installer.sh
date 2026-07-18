@@ -2,11 +2,15 @@
 
 clear
 
+echo "Creating App Directory"
+mkdir minivmac_dskmgr
+cd minivmac_dskmgr
+
 echo "Updating System"
 sudo apt-get update  && sudo apt-get upgrade
 
 echo "Installing dependencies"
-sudo apt install -y libsdl2-dev make gcc git python3 python3-pip python3-venv
+sudo apt install -y libsdl2-dev make gcc git python3 python3-pip python3-venv hfsutils
 
 echo "Creating and activating python virtual environment"
 python3 -m venv env
@@ -25,9 +29,12 @@ echo "Replacing Sony floppy disk driver"
 cp ./Minivmac-Disk-Helper/helper_files/SONYEMDV.c ./minivmac/src
 
 echo "Setting build settings"
+sed -i "s/sd3/sd2/g" ./minivmac/build_linux.sh
 
 echo "Building minivmac"
-./minivmac/build_linux64.sh
+cd minivmac
+./build_linux.sh
+cd ..
 
 echo "Copying over helper.py and launch script"
 cp ./Minivmac-Disk-Helper/helper_files/helper.py ./minivmac

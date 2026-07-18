@@ -107,6 +107,7 @@ class DiskManager:
 						##Floppy specific code
 		
 if __name__ == "__main__":
+	subprocess.run(["./minivmac/minivmac"], check=True, capture_output=True, text=True)
 	time.sleep(1)
 	manager = DiskManager("/mnt/usb", 2)
 	log = []
