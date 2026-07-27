@@ -29,7 +29,7 @@ echo "Replacing Sony floppy disk driver"
 cp ./Minivmac-Disk-Helper/helper_files/SONYEMDV.c ./minivmac/src
 
 echo "Setting build settings"
-sed -i "s/sd3/sd2/g" ./minivmac/build_linux.sh
+cp ./Minivmac-Disk-Helper/helper_files/build_linux.sh ./minivmac
 
 echo "Building minivmac"
 cd minivmac

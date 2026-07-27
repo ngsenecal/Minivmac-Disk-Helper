@@ -1,1 +1,1 @@
-env/bin/python3 ./minivmac/helper.py
+./env/bin/python3 ./minivmac/helper.py
