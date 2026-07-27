@@ -10,7 +10,7 @@ echo "Updating System"
 sudo apt-get update  && sudo apt-get upgrade
 
 echo "Installing dependencies"
-sudo apt install -y libsdl2-dev make gcc git python3 python3-pip python3-venv hfsutils
+sudo apt install -y libsdl2-dev make gcc git python3 python3-pip python3-venv
 
 echo "Creating and activating python virtual environment"
 python3 -m venv env
@@ -37,7 +37,7 @@ cd minivmac
 cd ..
 
 echo "Copying over helper.py and launch script"
-cp ./Minivmac-Disk-Helper/helper_files/helper.py ./minivmac
+cp ./Minivmac-Disk-Helper/helper_files/helper.py .
 cp ./Minivmac-Disk-Helper/helper_files/start.sh .
 sudo chmod +x start.sh
 
