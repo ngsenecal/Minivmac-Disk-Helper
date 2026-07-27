@@ -66,7 +66,7 @@ class DiskManager:
 					if self.disks[val] is None:
 						slot = val
 						break
-				shutil.copy(f"{path}/{file.name}", f"disk{slot}.dsk")
+				shutil.copy(f"{path}/{file.name}", f"./minivmac/disk{slot}.dsk")
 
 				self.board.write(e.EV_KEY, e.KEY_LEFTCTRL, 1)
 				self.board.write(e.EV_KEY, self.pairs[slot], 1)
@@ -88,7 +88,7 @@ class DiskManager:
 						time.sleep(0.1)
 
 				self.disks[slot] = Disk(file.name, path, slot, filesystem, num)
-				os.remove(f"insert{num}")
+				os.remove(f"./insert{num}")
 				print("removedk")
 			else:
 				subprocess.run(["sudo", "umount", path], check=True, capture_output=True, text=True)
@@ -100,23 +100,22 @@ class DiskManager:
 				if self.disks[key].v_drive == num:
 					drive = self.disks[key]
 					if drive.fs != "hfs":
-						shutil.copy(f"./disk{key}.dsk", f"{drive.mount}/{drive.filename}")
+						shutil.copy(f"./minivmac/disk{key}.dsk", f"{drive.mount}/{drive.filename}")
 						subprocess.run(["sudo", "umount", drive.mount], check=True, capture_output=True, text=True)
 						self.disks[key] = None
-						os.remove(f"disk{key}.dsk")
-						os.remove(f"eject{num}")
+						os.remove(f"./minivmac/disk{key}.dsk")
+						os.remove(f"./eject{num}")
 					else:
 						pass
 						##Floppy specific code
 		
 if __name__ == "__main__":
 	for file in Path(".").glob("eject*"):
-		os.remove(file.name)
+		os.remove(f"./{file.name}")
 	for file in Path(".").glob("insert*"):
-		os.remove(file.name)
+		os.remove(f"./{file.name}")
 
-	print("starting minivmac")
-	#subprocess.run(["./minivmac"], check=True, capture_output=True, text=True)
+	app = subprocess.Popen(["./minivmac/minivmac"])
 	#time.sleep(1)
 	manager = DiskManager("/mnt/usb", 2)
 	log = []
@@ -128,11 +127,10 @@ if __name__ == "__main__":
 		for program in psutil.process_iter(['pid', 'name']):
 			log.append(program.info['name'])
 
-		#if "minivmac" not in log:
-			#manager.observer.stop()
-			#subprocess.run(["deactivate"], check=True, capture_output=True, text=True)
-			#clear parent of mount directories
-			#sys.exit()
+		if app.poll() is not None:
+			manager.observer.stop()
+			#clear parent of mount directories?
+			sys.exit(0)
 		else:
 			log = []
 		time.sleep(0.5)
