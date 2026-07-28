@@ -36,7 +36,6 @@ class DiskManager:
 			if action == "add" and device.device_type == "partition":
 				node = device.device_node
 				partition = device.device_node.split("/")[-1]
-				print(partition)
 				filesystem = device.get("ID_FS_TYPE")
 				self.mount(node, partition, filesystem)
 			elif action == "remove" and device.device_type == "partition":
@@ -80,7 +79,6 @@ class DiskManager:
 					for insert in Path(".").glob("insert*"):
 						temp.append(insert)
 					if len(temp)> 0:
-						print(temp)
 						num = temp[0].name[-1]
 						break
 					else:
@@ -89,7 +87,6 @@ class DiskManager:
 
 				self.disks[slot] = Disk(file.name, path, slot, filesystem, num)
 				os.remove(f"./insert{num}")
-				print("removedk")
 			else:
 				subprocess.run(["sudo", "umount", path], check=True, capture_output=True, text=True)
 			
@@ -115,8 +112,8 @@ if __name__ == "__main__":
 	for file in Path(".").glob("insert*"):
 		os.remove(f"./{file.name}")
 
-	app = subprocess.Popen(["./minivmac/minivmac"])
-	#time.sleep(1)
+	user = os.environ.get("SUDO_USER")
+	time.sleep(1)
 	manager = DiskManager("/mnt/usb", 2)
 	log = []
 	
@@ -127,7 +124,7 @@ if __name__ == "__main__":
 		for program in psutil.process_iter(['pid', 'name']):
 			log.append(program.info['name'])
 
-		if app.poll() is not None:
+		if "minivmac" not in log:
 			manager.observer.stop()
 			#clear parent of mount directories?
 			sys.exit(0)
