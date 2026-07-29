@@ -66,10 +66,11 @@ class DiskManager:
 						slot = val
 						break
 				shutil.copy(f"{path}/{file.name}", f"./minivmac/disk{slot}.dsk")
+				os.chmod(f"./minivmac/disk{slot}.dsk", 0o666)
 
-				self.board.write(e.EV_KEY, e.KEY_LEFTCTRL, 1)
+				self.board.write(e.EV_KEY, e.KEY_F5, 1)
 				self.board.write(e.EV_KEY, self.pairs[slot], 1)
-				self.board.write(e.EV_KEY, e.KEY_LEFTCTRL, 0)
+				self.board.write(e.EV_KEY, e.KEY_F5, 0)
 				self.board.write(e.EV_KEY, self.pairs[slot], 0)
 				self.board.syn()
 
@@ -98,6 +99,7 @@ class DiskManager:
 					drive = self.disks[key]
 					if drive.fs != "hfs":
 						shutil.copy(f"./minivmac/disk{key}.dsk", f"{drive.mount}/{drive.filename}")
+						os.chmod(f"{drive.mount}/{drive.filename}", 0o666)
 						subprocess.run(["sudo", "umount", drive.mount], check=True, capture_output=True, text=True)
 						self.disks[key] = None
 						os.remove(f"./minivmac/disk{key}.dsk")
@@ -112,7 +114,6 @@ if __name__ == "__main__":
 	for file in Path(".").glob("insert*"):
 		os.remove(f"./{file.name}")
 
-	user = os.environ.get("SUDO_USER")
 	time.sleep(1)
 	manager = DiskManager("/mnt/usb", 2)
 	log = []

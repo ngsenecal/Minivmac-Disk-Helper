@@ -1,31 +1,30 @@
 #!/bin/sh
-#
-# Example of how to build the SDL2 version of Mini vMac on Linux
-#
 
-# we need to build the setup tool first
+# Minivmac build for Minivmac Disk Helper
+
 if [ ! -x ./setup_t ]; then
 	gcc -o setup_t setup/tool.c
 fi
 
 # run setup tool to generate makefile generator
-./setup_t -maintainer "egon.rath@gmail.com" \
-        -homepage "https://github.com/egrath" \
-        -n "minivmac-3.7-test" \
+./setup_t -maintainer "neilsenecalwork@gmail.com" \
+        -homepage "https://github.com/ngsenecal" \
+        -n "minivmac-disk-helper-ver" \
         -e bgc \
         -t lx64 \
         -m II \
         -hres 512 -vres 342 -depth 1 \
-        -magnify 0 \
+        -magnify 1 \
         -mf 2 \
         -sound 1 \
         -sony-sum 1 -sony-tag 1 \
-        -speed 4 -ta 2 -em-cpu 2 -mem 8M \
+        -speed z -ta 2 -em-cpu 2 -mem 8M \
         -chr 0 -drc 1 -sss 4 \
         -fullscreen 1 \
         -var-fullscreen 1 \
         -iid 1 \
         -drives 2 \
+        -km Option Command -km Control Option -km F5 CM\
         -api sd2 \
         > setup.sh
 
