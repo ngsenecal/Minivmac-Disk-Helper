@@ -1,32 +1,38 @@
-Minivmac Disk Helper
+﻿Minivmac Disk Helper
+-
+[Minivmac](https://github.com/minivmac/minivmac) is an excellent Macintosh emulator that suffers from one minor flaw: no support for physical, removable storage mediums (floppy drive, USB drives, etc). This tool aims to change that by creating a pipeline that reads the data off of a storage medium, packages it as a .dsk file, handles insert/eject activity, and writes the updated data back to the medium.
 
-[Minivmac](https://github.com/minivmac/minivmac) is an excellent Macintosh emulator that suffers from one minor flaw: no support for physical, removable storage mediums. This helper script aims to change that.
+*-  How Does This Work? -*
+Minivmac patches the system ROM to load a custom floppy driver further modifies this custom driver to create "flag" files for insert and eject events. The Python script is able to emulate a keyboard and use the built-in "insert disk" hotkeys to mount disks in-emulator. USB events are monitored for storage devices containing a blank file named "disk" and a .dsk file. 
 
-Method:
-Minivmac uses disk (.dsk) images formatted in hfs to load external software and files. This script create a pipeline that reads the data off of a storage medium, packaging it as a .dsk file, handles insert/eject activity, and writes the updated data to the medium.
+This script targets an x64 Debian-based system. This is for a couple of reasons:
+- Less system overhead.
+- Fine control over OS functions.
+- If you want to emulate a mac, you're probably familiar with Linux already.
 
-Minivmac patches the system ROM to allow for a custom floppy driver to load. This helper script patches the this custom driver to create "flag" files to trigger ejects. It also uses the built-in "insert disk" hotkeys to mount disks in-emulator.
+*-   TODO -*
+ - [ ] greaseweasle support
+ - [ ] fdd@1306 IC support (dd)
+ - [x]  Multi-drive support: track drives, mount points, file names, disk # in emulator
+ - [ ] Disable keyboard hotkeys for disk insertion to prevent accidental double inserts 
+- [x] Clean all flags on exit
+- [ ] Mercy mode: on exit, copy disk files one last time
 
-This script targets an x64 Linux system. This is for a couple of reasons:
- -less system overhead.
- -fine control over OS functions.
- -let's face it, if you want to emulate a mac, you're probably familiar with Linux already.
- 
-For dependency compatibility, install a Debian-based system.
+**Before You Install:**
+- Check that you are running an x64 Debian-based system.
+- Make sure you have root access.
 - Determine if your desktop environment auto-mounts external drives. If it does, disable its ability to do so.	
-- Alternatively, consider disabling the desktop environment entirely.
-
-*todo*
- -Support 2+ drives: track drives, mount points, file names, disk # in emulator
- -Check for physical floppy on device mount: "drive" file or partition formatted as hfs
- -on exit, delete eject flag one last time
- -realistic vs mercy mode: on exit, copy disk files one last time?
- -floppy read mode: pick between dd or hcopy (recursive)
+- Disable pop up notifications and/or notification sounds in your system settings. Anything that takes focus away from the emulator will break support.
 
 **Automatic Setup:**
-[TBD]
+1) Download installer.sh from the Releases page.
+2) Move installer.sh the directory you want to install in.
+3) Run installer.sh. You will require root privileges.
+4) Transfer a Mac II ROM and an OS disk to the minivmac folder.
+5) Launch start.sh from the terminal. You will need root.
 
-**Manual Setup:**
+
+**Manual Setup:** [Under construction]
 1) Update your system:`sudo apt-get update  && sudo apt-get upgrade`.
 
 2) Install dependencies:

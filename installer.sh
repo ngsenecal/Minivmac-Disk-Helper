@@ -2,6 +2,8 @@
 
 clear
 
+sudo -v
+
 echo "Creating App Directory"
 mkdir minivmac_dskmgr
 cd minivmac_dskmgr

@@ -8,6 +8,9 @@ import time
 import os
 import sys
 
+# Create helper function that checks for a file. If the file does not exist after x iterations
+# return False and let the parent function determine what to do
+
 class Disk:
 	def __init__(self, filename, mount, number, filesystem, v_drive=None):
 		self.filename = filename
