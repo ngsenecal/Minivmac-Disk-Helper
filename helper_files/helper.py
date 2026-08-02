@@ -1,4 +1,3 @@
-from evdev import UInput, ecodes as e
 from pathlib import Path
 import subprocess
 import psutil
@@ -12,8 +11,9 @@ import sys
 # return False and let the parent function determine what to do
 
 class Disk:
-	def __init__(self, filename, mount, number, filesystem, v_drive=None):
+	def __init__(self, filename, node, mount, number, filesystem, v_drive=None):
 		self.filename = filename
+		self.node = node
 		self.mount = mount
 		self.number = number
 		self.v_drive = v_drive
@@ -21,12 +21,12 @@ class Disk:
 
 class DiskManager:
 	def __init__(self, mnt, limit):
-		self.board = UInput()
+		#self.board = UInput()
 		self.disks = {1: "SYSTEM", 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
 		self.mnt = mnt
 		self.limit = limit
-		self.pairs = {1: e.KEY_1, 2: e.KEY_2, 3: e.KEY_3, 4: e.KEY_4, 5: e.KEY_5,
-					6: e.KEY_6, 7: e.KEY_7, 8: e.KEY_8, 9: e.KEY_9}
+		# self.pairs = {1: e.KEY_1, 2: e.KEY_2, 3: e.KEY_3, 4: e.KEY_4, 5: e.KEY_5,
+		# 			6: e.KEY_6, 7: e.KEY_7, 8: e.KEY_8, 9: e.KEY_9}
 		self.observer = None
 		self.detection_init()
 	
@@ -38,9 +38,8 @@ class DiskManager:
 		def event(action, device):
 			if action == "add" and device.device_type == "partition":
 				node = device.device_node
-				partition = device.device_node.split("/")[-1]
 				filesystem = device.get("ID_FS_TYPE")
-				self.mount(node, partition, filesystem)
+				self.mount(node, filesystem) # for rootless, only node is required
 			elif action == "remove" and device.device_type == "partition":
 				pass
 				# loop through the dictionary and try to match mount points
@@ -51,14 +50,12 @@ class DiskManager:
 		self.observer.start()
 
 
-	def mount(self, node, partition, filesystem):
-		path = f"{self.mnt}/{partition}"
+	def mount(self, node, filesystem):
 		if filesystem == "hfs":
 			subprocess.run(["dd", f"if={node}", "of=./disk3.dsk", "bs=512" ], check=True, capture_output=True, text=True)
 		else:
-			if not os.path.exists(path):
-				os.makedirs(path)
-			subprocess.run(["sudo", "mount", node, path], check=True, capture_output=True, text=True)
+			cap = subprocess.run(["udisksctl", "mount", "-b", node], capture_output=True, text=True)
+			path = cap.stdout.split()[-1]
 			if os.path.isfile(f"{path}/disk"):
 				file, slot, num = None, None, None
 				for temp in Path(path).glob("*.dsk"):
@@ -69,13 +66,14 @@ class DiskManager:
 						slot = val
 						break
 				shutil.copy(f"{path}/{file.name}", f"./minivmac/disk{slot}.dsk")
-				os.chmod(f"./minivmac/disk{slot}.dsk", 0o666)
+				#os.chmod(f"./minivmac/disk{slot}.dsk", 0o666)
 
-				self.board.write(e.EV_KEY, e.KEY_F5, 1)
-				self.board.write(e.EV_KEY, self.pairs[slot], 1)
-				self.board.write(e.EV_KEY, e.KEY_F5, 0)
-				self.board.write(e.EV_KEY, self.pairs[slot], 0)
-				self.board.syn()
+				# self.board.write(e.EV_KEY, e.KEY_F5, 1)
+				# self.board.write(e.EV_KEY, self.pairs[slot], 1)
+				# self.board.write(e.EV_KEY, e.KEY_F5, 0)
+				# self.board.write(e.EV_KEY, self.pairs[slot], 0)
+				# self.board.syn()
+				subprocess.run(["ydotool", "key","-d", "1", "63:1", "3:1", "63:0", "3:0"])
 
 				i = 0
 				while i < 10:
@@ -88,11 +86,13 @@ class DiskManager:
 					else:
 						i += 1
 						time.sleep(0.1)
-
-				self.disks[slot] = Disk(file.name, path, slot, filesystem, num)
-				os.remove(f"./insert{num}")
+				if num is not None:
+					os.remove(f"./insert{num}")
+					self.disks[slot] = Disk(file.name, node, path, slot, filesystem, num)
+				else:
+					subprocess.run(["udisksctl", "unmount", "-b",  node])
 			else:
-				subprocess.run(["sudo", "umount", path], check=True, capture_output=True, text=True)
+				subprocess.run(["udisksctl", "unmount", "-b",  node])
 			
 		
 	def unmount(self, num):
@@ -101,9 +101,10 @@ class DiskManager:
 				if self.disks[key].v_drive == num:
 					drive = self.disks[key]
 					if drive.fs != "hfs":
-						shutil.copy(f"./minivmac/disk{key}.dsk", f"{drive.mount}/{drive.filename}")
-						os.chmod(f"{drive.mount}/{drive.filename}", 0o666)
-						subprocess.run(["sudo", "umount", drive.mount], check=True, capture_output=True, text=True)
+						if os.path.isfile(f"{drive.mount}/{drive.filename}"):
+							shutil.copy(f"./minivmac/disk{key}.dsk", f"{drive.mount}/{drive.filename}")
+							#os.chmod(f"{drive.mount}/{drive.filename}", 0o666)
+							subprocess.run(["udisksctl", "unmount", "-b", drive.node])
 						self.disks[key] = None
 						os.remove(f"./minivmac/disk{key}.dsk")
 						os.remove(f"./eject{num}")
@@ -116,6 +117,9 @@ if __name__ == "__main__":
 		os.remove(f"./{file.name}")
 	for file in Path(".").glob("insert*"):
 		os.remove(f"./{file.name}")
+	for file in Path("./minivmac").glob("disk*"):
+		if file.name != "disk1.dsk":
+			os.remove(f"./minivmac/{file.name}")
 
 	time.sleep(1)
 	manager = DiskManager("/mnt/usb", 2)
